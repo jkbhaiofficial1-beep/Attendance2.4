@@ -1,0 +1,1924 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LABORS | Javed Khan</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f7f9fd;
+            color: #1e293b;
+            user-select: none;
+            overflow-x: hidden;
+            font-size: 13.5px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .num-tabular {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        /* Midnight Header matching screenshots */
+        .app-header {
+            background: linear-gradient(180deg, #0c1230 0%, #131c46 100%);
+            box-shadow: 0 4px 16px rgba(12, 18, 48, 0.18);
+        }
+
+        .curved-header-hero {
+            background: linear-gradient(180deg, #131c46 0%, #19255c 100%);
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+        }
+
+        /* Bottom Tab Bar */
+        .bottom-bar {
+            background: #ffffff;
+            border-top: 1px solid #edf2f7;
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.03);
+            padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+        }
+
+        .nav-item-active {
+            color: #2c58ee !important;
+        }
+        .nav-item-active .nav-icon-bg {
+            background-color: #eef3ff !important;
+            color: #2c58ee !important;
+        }
+
+        /* Attendance Badges matching screenshot */
+        .att-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            transition: all 0.15s ease;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            color: #64748b;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        @media (min-width: 380px) {
+            .att-circle {
+                width: 34px;
+                height: 34px;
+                font-size: 12px;
+            }
+        }
+        .att-circle:active {
+            transform: scale(0.92);
+        }
+        .att-circle.active-p {
+            background-color: #0ea573;
+            color: #ffffff;
+            border-color: #0b8f63;
+            box-shadow: 0 2px 8px rgba(14, 165, 115, 0.35);
+        }
+        .att-circle.active-half {
+            background-color: #f59e0b;
+            color: #ffffff;
+            border-color: #d97706;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+        }
+        .att-circle.active-a {
+            background-color: #ea2e49;
+            color: #ffffff;
+            border-color: #d01c36;
+            box-shadow: 0 2px 8px rgba(234, 46, 73, 0.35);
+        }
+        .att-circle.active-ot {
+            background-color: #f97316;
+            color: #ffffff;
+            border-color: #ea580c;
+        }
+        .att-circle.active-off {
+            background-color: #64748b;
+            color: #ffffff;
+            border-color: #475569;
+        }
+
+        /* Floating Blue + ADD LABOR Button */
+        .btn-add-labor {
+            background: linear-gradient(135deg, #2b56ee 0%, #1f47dd 100%);
+            box-shadow: 0 8px 24px rgba(43, 86, 238, 0.38);
+        }
+
+        /* Full width Open Statement Button */
+        .btn-statement-report {
+            background: linear-gradient(135deg, #305bee 0%, #224be2 100%);
+            box-shadow: 0 6px 18px rgba(44, 88, 238, 0.32);
+        }
+
+        /* Modal transitions */
+        .modal-overlay {
+            background-color: rgba(12, 18, 48, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: opacity 0.22s ease;
+        }
+        .modal-sheet {
+            transform: translateY(100%);
+            transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+            padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+        }
+        .modal-open .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .category-chip {
+            transition: all 0.16s ease;
+            border: 1.5px solid #eef2f6;
+        }
+        .category-chip.selected {
+            border-color: #2c58ee !important;
+            background-color: #eef3ff !important;
+        }
+
+        .fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="flex flex-col min-h-screen">
+        <!-- Dark Midnight Header matching screenshots -->
+        <header class="app-header text-white px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button id="back-btn" class="hidden p-1.5 -ml-1 text-white active:scale-95 transition-transform" onclick="goBack()">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h1 id="header-title" class="text-base sm:text-lg font-black tracking-wider uppercase leading-tight text-white">LABORS</h1>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="w-2 h-2 rounded-full bg-[#10b981] inline-block shadow-[0_0_8px_#10b981]"></span>
+                        <span class="text-[11px] text-slate-300 font-bold tracking-normal">Javed Khan • 8306132320</span>
+                    </div>
+                </div>
+            </div>
+            <div id="header-right" class="flex items-center gap-2"></div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-grow pb-24 max-w-md w-full mx-auto">
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav id="bottom-nav" class="bottom-bar fixed bottom-0 left-0 right-0 flex justify-around py-2 z-40 max-w-md mx-auto">
+            <button onclick="switchTab('labors')" class="flex flex-col items-center gap-1 text-slate-400 font-black text-[10px] tracking-wider uppercase transition-all" id="nav-labors">
+                <div class="nav-icon-bg w-12 h-8 rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+                <span>LABORS</span>
+            </button>
+            <button onclick="switchTab('cashbook')" class="flex flex-col items-center gap-1 text-slate-400 font-black text-[10px] tracking-wider uppercase transition-all" id="nav-cashbook">
+                <div class="nav-icon-bg w-12 h-8 rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-wallet text-lg"></i>
+                </div>
+                <span>CASHBOOK</span>
+            </button>
+            <button onclick="switchTab('settings')" class="flex flex-col items-center gap-1 text-slate-400 font-black text-[10px] tracking-wider uppercase transition-all" id="nav-settings">
+                <div class="nav-icon-bg w-12 h-8 rounded-xl flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </div>
+                <span>SETTINGS</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Attendance Modal (P, 1/2, 1.5, 2P) -->
+    <div id="attendance-modal" class="fixed inset-0 z-50 hidden modal-overlay items-end justify-center sm:items-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-5 pt-3 flex flex-col gap-4 modal-sheet shadow-2xl border border-slate-100">
+            <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto my-1 sm:hidden"></div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-800">Mark Presence</h2>
+                    <p class="text-[11px] text-slate-400 font-bold mt-0.5">Select presence units</p>
+                </div>
+                <span id="modal-date" class="text-blue-600 font-extrabold bg-blue-50 px-3 py-1 rounded-full text-xs num-tabular"></span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="saveAttendance('present')" class="p-3.5 rounded-2xl bg-[#0ea573] text-white font-black active:scale-95 shadow-sm flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-2xl leading-none">P</span>
+                    <span class="text-[10px] font-bold opacity-90 uppercase">Full Day (1.0)</span>
+                </button>
+                <button onclick="saveAttendance('half')" class="p-3.5 rounded-2xl bg-[#f59e0b] text-white font-black active:scale-95 shadow-sm flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-2xl leading-none">½</span>
+                    <span class="text-[10px] font-bold opacity-90 uppercase">Half Day (0.5)</span>
+                </button>
+                <button onclick="saveAttendance('onehalf')" class="p-3.5 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-black active:scale-95 flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-xl leading-none">P+½</span>
+                    <span class="text-[10px] font-bold text-emerald-700 uppercase">1.5 Day</span>
+                </button>
+                <button onclick="saveAttendance('double')" class="p-3.5 rounded-2xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-black active:scale-95 flex flex-col items-center justify-center gap-0.5">
+                    <span class="text-xl leading-none">P+P</span>
+                    <span class="text-[10px] font-bold text-emerald-800 uppercase">Double (2.0)</span>
+                </button>
+            </div>
+            <button onclick="closeAttendanceModal()" class="w-full py-3 rounded-xl bg-slate-100 font-bold text-slate-600 active:scale-95 transition-all text-xs uppercase tracking-wider">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Payment Received Modal with Extra Advance & Auto Remark -->
+    <div id="advance-modal" class="fixed inset-0 z-50 hidden modal-overlay items-end justify-center sm:items-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-5 pt-3 flex flex-col gap-3 modal-sheet shadow-2xl border border-slate-100">
+            <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto my-1 sm:hidden"></div>
+            
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-800">Payment Received</h2>
+                    <p id="modal-daily-rate-hint" class="text-[10px] text-slate-400 font-bold mt-0.5">Daily Rate: ₹600</p>
+                </div>
+                <span id="advance-modal-date" class="text-blue-600 font-extrabold bg-blue-50 px-3 py-1 rounded-full text-xs num-tabular"></span>
+            </div>
+
+            <!-- Running Balance & Entitlement Status Pill -->
+            <div id="modal-earnings-summary" class="bg-blue-50/70 border border-blue-100 rounded-xl p-2.5 flex flex-col gap-1 text-[11px] font-bold text-slate-700">
+                <div class="flex items-center justify-between">
+                    <span id="modal-work-days-count" class="text-blue-700">काम: 0 दिन</span>
+                    <span id="modal-work-earnings-count" class="text-emerald-700">कुल हकदार: ₹0</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-blue-200/50 pt-1 text-[10.5px]">
+                    <span class="text-slate-500">पिछला रोलओवर बैलेंस:</span>
+                    <span id="modal-prev-rollover-display" class="num-tabular font-black">₹0</span>
+                </div>
+            </div>
+
+            <!-- Amount Received & Extra Advance Inputs Side by Side -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Amount Received</label>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-blue-600 font-black text-base">₹</span>
+                        <input id="advance-input" type="number" oninput="handleAmountReceivedInput()" class="bg-transparent w-full outline-none font-black text-lg text-slate-800 num-tabular placeholder:text-slate-300" placeholder="0" autofocus>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Extra Advance</label>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-orange-500 font-black text-base">₹</span>
+                        <input id="extra-advance-input" type="number" oninput="handleExtraAdvanceInput()" class="bg-transparent w-full outline-none font-black text-lg text-slate-800 num-tabular placeholder:text-slate-300" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add buttons -->
+            <div class="grid grid-cols-5 gap-1.5">
+                <button type="button" onclick="addQuickAdvanceValue(50)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+50</button>
+                <button type="button" onclick="addQuickAdvanceValue(100)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+100</button>
+                <button type="button" onclick="addQuickAdvanceValue(200)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+200</button>
+                <button type="button" onclick="addQuickAdvanceValue(500)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+500</button>
+                <button type="button" onclick="addQuickAdvanceValue(1000)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+1000</button>
+            </div>
+
+            <!-- Auto Remark Field -->
+            <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Remark</label>
+                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <input id="advance-remark-input" type="text" class="bg-transparent w-full outline-none font-bold text-xs text-slate-700 placeholder:text-slate-300" placeholder="RS 0 AMOUNT RECEIVE">
+                </div>
+            </div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="closeAdvanceModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-slate-600 text-xs uppercase tracking-wider active:scale-95 transition-all">Cancel</button>
+                <button type="button" onclick="saveAdvanceAmount()" class="flex-[1.4] py-3 rounded-xl bg-[#2c58ee] text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-500/25 active:scale-95 transition-all">Save Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cashbook Modal (In / Out) -->
+    <div id="cashbook-modal" class="fixed inset-0 z-50 hidden modal-overlay items-end justify-center sm:items-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-5 pt-3 flex flex-col gap-3.5 modal-sheet shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-100">
+            <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto my-1 sm:hidden"></div>
+            
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h2 id="cashbook-modal-title" class="text-base font-extrabold text-slate-800">💵 Add Income</h2>
+                <input type="date" id="cashbook-date-input" class="text-blue-600 font-extrabold bg-blue-50 px-2 py-1 rounded-xl text-xs outline-none border border-blue-100 cursor-pointer num-tabular">
+            </div>
+
+            <div class="flex items-center gap-2.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span class="text-xl font-black text-slate-400">₹</span>
+                <input id="cashbook-amount-input" type="number" class="bg-transparent w-full outline-none font-black text-2xl text-slate-800 num-tabular placeholder:text-slate-300" placeholder="0" autofocus>
+            </div>
+
+            <div class="grid grid-cols-5 gap-1.5">
+                <button type="button" onclick="addQuickValue(10)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+10</button>
+                <button type="button" onclick="addQuickValue(50)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+50</button>
+                <button type="button" onclick="addQuickValue(100)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+100</button>
+                <button type="button" onclick="addQuickValue(500)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+500</button>
+                <button type="button" onclick="addQuickValue(1000)" class="py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold active:scale-95 num-tabular text-center">+1000</button>
+            </div>
+
+            <div id="cashbook-category-section" class="flex flex-col gap-1 mt-1">
+                <label id="category-section-label" class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Category:</label>
+                <div id="cashbook-category-container" class="grid grid-cols-3 gap-2"></div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Payment Mode:</label>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" id="mode-cash-btn" onclick="selectCashbookMode('cash')" class="py-2.5 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-extrabold text-xs active:scale-95 flex items-center justify-center gap-1.5">
+                        <span>💵 Cash</span>
+                    </button>
+                    <button type="button" id="mode-online-btn" onclick="selectCashbookMode('online')" class="py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold text-xs active:scale-95 flex items-center justify-center gap-1.5">
+                        <span>📱 Online / UPI</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Remark (Optional):</label>
+                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <input id="cashbook-remark-input" type="text" class="bg-transparent w-full outline-none font-medium text-xs text-slate-700 placeholder:text-slate-400" placeholder="Enter remarks...">
+                </div>
+            </div>
+
+            <div class="flex gap-2.5 pt-1">
+                <button type="button" onclick="closeCashbookModal()" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold text-slate-600 text-xs uppercase tracking-wider active:scale-95 transition-all">Cancel</button>
+                <button type="button" onclick="saveCashbookEntry()" class="flex-[1.4] py-3 rounded-xl bg-[#2c58ee] text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-500/25 active:scale-95 transition-all">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[60] hidden modal-overlay items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 flex flex-col gap-3 shadow-2xl text-center border border-slate-100">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center mx-auto text-lg">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="font-extrabold text-slate-800 text-base">Are you sure?</h3>
+            <p id="confirm-modal-msg" class="text-slate-500 text-xs font-medium leading-relaxed"></p>
+            <div class="flex gap-2 mt-1">
+                <button type="button" id="confirm-cancel-btn" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs active:scale-95">Cancel</button>
+                <button type="button" id="confirm-ok-btn" class="flex-1 py-2.5 bg-rose-600 text-white rounded-xl font-bold text-xs shadow-md active:scale-95">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full bg-slate-900/95 text-white font-bold text-xs shadow-xl z-[100] opacity-0 translate-y-4 pointer-events-none transition-all duration-200 border border-slate-700/50 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <script>
+        const DB_KEYS = { 
+            LABORS: 'ltool_elite_labors', 
+            ATT: 'ltool_elite_att', 
+            ADV: 'ltool_elite_adv',
+            ADV_DETAILS: 'ltool_elite_adv_details',
+            CASHBOOK: 'ltool_elite_cashbook'
+        };
+
+        const load = (k, f) => {
+            try {
+                const item = localStorage.getItem(k);
+                return item ? JSON.parse(item) : f;
+            } catch (e) {
+                return f;
+            }
+        };
+        const save = (k, d) => {
+            try {
+                localStorage.setItem(k, JSON.stringify(d));
+            } catch (e) {
+                console.error("Storage error:", e);
+            }
+        };
+
+        const CASH_IN_CATEGORIES = [
+            { label: 'Payment Received', value: '💵 Payment Received', icon: '💵' },
+            { label: 'Borrowed / Loan', value: '🤝 Borrowed / Loan', icon: '🤝' },
+            { label: 'Other Income', value: '⚙️ Other Income', icon: '⚙️' }
+        ];
+
+        const CASH_OUT_CATEGORIES = [
+            { label: 'EMI Paid', value: '📉 EMI Paid', icon: '📉' },
+            { label: 'Home Expense', value: '🏡 Home Expense', icon: '🏡' },
+            { label: 'Medical Expense', value: '💊 Medical Expense', icon: '💊' },
+            { label: 'Loan Repaid', value: '🤝 Loan Repaid', icon: '🤝' },
+            { label: 'Mobile Recharge', value: '📱 Mobile Recharge', icon: '📱' },
+            { label: 'Other Expense', value: '⚙️ Other Expense', icon: '⚙️' }
+        ];
+
+        // Demo seed data if completely fresh
+        const initialLabors = load(DB_KEYS.LABORS, null);
+        let defaultLaborsList = [];
+        if (!initialLabors || initialLabors.length === 0) {
+            defaultLaborsList = [
+                { id: '1', name: 'AYUB', phone: '8306132320', salaryAmount: '600' },
+                { id: '2', name: 'ISLAM', phone: '10110040440', salaryAmount: '600' },
+                { id: '3', name: 'PAWAN', phone: '3567645', salaryAmount: '600' },
+                { id: '4', name: 'SUDAM', phone: '72727272', salaryAmount: '600' },
+                { id: '5', name: 'SUDAM 2', phone: 'Null', salaryAmount: '600' }
+            ];
+            save(DB_KEYS.LABORS, defaultLaborsList);
+        } else {
+            defaultLaborsList = initialLabors;
+        }
+
+        let state = {
+            currentTab: 'labors',
+            currentView: 'list',
+            selectedLaborId: null,
+            currentMonth: new Date(),
+            cashbookMonth: new Date(),
+            labors: defaultLaborsList,
+            attendance: load(DB_KEYS.ATT, {}),
+            advances: load(DB_KEYS.ADV, {}),
+            advanceDetails: load(DB_KEYS.ADV_DETAILS, {}),
+            cashbook: load(DB_KEYS.CASHBOOK, []), 
+            selectedDateKey: null,
+            reportFilter: 'all', 
+            cashbookModalType: 'in', 
+            selectedCategory: '',
+            selectedPaymentMode: 'cash'
+        };
+
+        function cleanOldSyncedAdvances() {
+            if (state.cashbook && state.cashbook.length > 0) {
+                state.cashbook = state.cashbook.filter(e => !e.ref || !e.ref.startsWith('adv_link_'));
+            }
+        }
+        cleanOldSyncedAdvances();
+
+        function sync() {
+            save(DB_KEYS.LABORS, state.labors);
+            save(DB_KEYS.ATT, state.attendance);
+            save(DB_KEYS.ADV, state.advances);
+            save(DB_KEYS.ADV_DETAILS, state.advanceDetails);
+            save(DB_KEYS.CASHBOOK, state.cashbook);
+        }
+
+        function getLocalISO(date) {
+            const d = new Date(date); 
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            return d.toISOString().split('T')[0];
+        }
+
+        function notify(msg) {
+            const t = document.getElementById('toast'); 
+            const msgEl = document.getElementById('toast-msg');
+            if (!t || !msgEl) return;
+            msgEl.innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+            setTimeout(() => t.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 2000);
+        }
+
+        function customConfirm(message, callback) {
+            const m = document.getElementById('confirm-modal');
+            const msgEl = document.getElementById('confirm-modal-msg');
+            if (msgEl) msgEl.innerText = message;
+            m.classList.remove('hidden'); 
+            m.classList.add('flex');
+            const close = () => { m.classList.add('hidden'); m.classList.remove('flex'); };
+            document.getElementById('confirm-cancel-btn').onclick = close;
+            document.getElementById('confirm-ok-btn').onclick = () => { close(); callback(); };
+        }
+
+        function getPreviousBalance(id, targetMonthDate) {
+            const att = state.attendance[id] || {};
+            const adv = state.advances[id] || {};
+            const labor = state.labors.find(l => l.id === id);
+            const rate = parseFloat(labor ? labor.salaryAmount : 0) || 0;
+            const currentMonthPrefix = getLocalISO(targetMonthDate).substring(0, 7);
+
+            let prevEarned = 0;
+            let prevPaid = 0;
+
+            Object.keys(att).forEach(d => {
+                if (d < currentMonthPrefix) {
+                    const s = att[d];
+                    let p = 0;
+                    if (s === 'present') p = 1;
+                    else if (s === 'half') p = 0.5;
+                    else if (s === 'onehalf') p = 1.5;
+                    else if (s === 'double') p = 2;
+                    prevEarned += p * rate;
+                }
+            });
+
+            Object.keys(adv).forEach(d => {
+                if (d < currentMonthPrefix) {
+                    prevPaid += parseFloat(adv[d]) || 0;
+                }
+            });
+
+            return prevEarned - prevPaid;
+        }
+
+        function getSummary(id, monthDate) {
+            const att = state.attendance[id] || {};
+            const adv = state.advances[id] || {};
+            const labor = state.labors.find(l => l.id === id);
+            const rate = parseFloat(labor ? labor.salaryAmount : 0) || 0;
+            const monthPrefix = getLocalISO(monthDate).substring(0, 7);
+
+            let pDays = 0, totalAdv = 0, absents = 0;
+            Object.keys(att).forEach(d => {
+                if(d.startsWith(monthPrefix)) {
+                    const s = att[d];
+                    if (s === 'present') pDays += 1; 
+                    else if (s === 'half') pDays += 0.5;
+                    else if (s === 'onehalf') pDays += 1.5; 
+                    else if (s === 'double') pDays += 2;
+                    else if (s === 'absent') absents += 1;
+                }
+            });
+            Object.keys(adv).forEach(d => { 
+                if(d.startsWith(monthPrefix)) totalAdv += parseFloat(adv[d]) || 0; 
+            });
+
+            const currentEarnings = pDays * rate;
+            const previousBalance = getPreviousBalance(id, monthDate);
+            const finalPayable = (previousBalance + currentEarnings) - totalAdv;
+
+            return { 
+                present: pDays, 
+                absent: absents, 
+                totalEarnings: currentEarnings, 
+                totalAdvance: totalAdv, 
+                previousBalance: previousBalance,
+                balance: finalPayable 
+            };
+        }
+
+        function getRunningBalanceUpToDate(laborId, targetDateStr) {
+            const labor = state.labors.find(l => l.id === laborId);
+            const rate = parseFloat(labor ? labor.salaryAmount : 0) || 0;
+            const att = state.attendance[laborId] || {};
+            const adv = state.advances[laborId] || {};
+            const monthPrefix = targetDateStr.substring(0, 7);
+            const targetDateObj = new Date(targetDateStr);
+
+            const prevBalance = getPreviousBalance(laborId, targetDateObj);
+            
+            let monthEarnedUpToDate = 0;
+            let monthPaidUpToDate = 0;
+
+            Object.keys(att).forEach(d => {
+                if (d.startsWith(monthPrefix) && d <= targetDateStr) {
+                    const s = att[d];
+                    let units = 0;
+                    if (s === 'present') units = 1;
+                    else if (s === 'half') units = 0.5;
+                    else if (s === 'onehalf') units = 1.5;
+                    else if (s === 'double') units = 2;
+                    monthEarnedUpToDate += units * rate;
+                }
+            });
+
+            Object.keys(adv).forEach(d => {
+                if (d.startsWith(monthPrefix) && d <= targetDateStr) {
+                    monthPaidUpToDate += parseFloat(adv[d]) || 0;
+                }
+            });
+
+            return prevBalance + monthEarnedUpToDate - monthPaidUpToDate;
+        }
+
+        function getCumulativeWorkStatsUpToDate(targetDateStr) {
+            const laborId = state.selectedLaborId;
+            const labor = state.labors.find(l => l.id === laborId);
+            const rate = parseFloat(labor ? labor.salaryAmount : 600) || 600;
+            const att = state.attendance[laborId] || {};
+            const adv = state.advances[laborId] || {};
+            const monthPrefix = targetDateStr.substring(0, 7);
+            const targetDateObj = new Date(targetDateStr);
+
+            let totalDaysWorked = 0;
+            let currentDayUnits = 0;
+
+            Object.keys(att).forEach(d => {
+                if (d.startsWith(monthPrefix) && d <= targetDateStr) {
+                    const s = att[d];
+                    let units = 0;
+                    if (s === 'present') units = 1;
+                    else if (s === 'half') units = 0.5;
+                    else if (s === 'onehalf') units = 1.5;
+                    else if (s === 'double') units = 2;
+
+                    totalDaysWorked += units;
+                    if (d === targetDateStr) {
+                        currentDayUnits = units;
+                    }
+                }
+            });
+
+            let priorPaidInMonth = 0;
+            Object.keys(adv).forEach(d => {
+                if (d.startsWith(monthPrefix) && d < targetDateStr) {
+                    priorPaidInMonth += parseFloat(adv[d]) || 0;
+                }
+            });
+
+            const currentPeriodEarned = totalDaysWorked * rate;
+            const prevBalance = getPreviousBalance(laborId, targetDateObj);
+            const totalEntitled = (prevBalance + currentPeriodEarned) - priorPaidInMonth;
+
+            return { 
+                totalDaysWorked, 
+                currentPeriodEarned, 
+                prevBalance, 
+                totalEarned: Math.max(0, totalEntitled), 
+                rawEntitled: totalEntitled,
+                rate,
+                currentDayUnits,
+                currentDayEarned: currentDayUnits * rate,
+                hasAttendanceToday: currentDayUnits > 0
+            };
+        }
+
+        function getOverallAttendanceEarnings(monthDate) {
+            let totalEarnings = 0;
+            const monthPrefix = monthDate ? getLocalISO(monthDate).substring(0, 7) : null;
+            state.labors.forEach(labor => {
+                const att = state.attendance[labor.id] || {};
+                const rate = parseFloat(labor.salaryAmount) || 0;
+                Object.keys(att).forEach(dateKey => {
+                    if (monthPrefix && !dateKey.startsWith(monthPrefix)) return;
+                    const s = att[dateKey];
+                    let pDays = 0;
+                    if(s === 'present') pDays = 1; 
+                    else if(s === 'half') pDays = 0.5;
+                    else if(s === 'onehalf') pDays = 1.5; 
+                    else if(s === 'double') pDays = 2;
+                    totalEarnings += pDays * rate;
+                });
+            });
+            return totalEarnings;
+        }
+
+        function getTodayAttendanceEarnings() {
+            let todayEarnings = 0;
+            const todayStr = getLocalISO(new Date());
+            state.labors.forEach(labor => {
+                const att = state.attendance[labor.id] || {};
+                const rate = parseFloat(labor.salaryAmount) || 0;
+                const s = att[todayStr];
+                if (s) {
+                    let pDays = 0;
+                    if(s === 'present') pDays = 1; 
+                    else if(s === 'half') pDays = 0.5;
+                    else if(s === 'onehalf') pDays = 1.5; 
+                    else if(s === 'double') pDays = 2;
+                    todayEarnings += pDays * rate;
+                }
+            });
+            return todayEarnings;
+        }
+
+        async function generatePDF() {
+            if (!window.jspdf) {
+                notify("PDF generator loading, please wait...");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const labor = state.labors.find(l => l.id === state.selectedLaborId);
+            if (!labor) return;
+            const summary = getSummary(labor.id, state.currentMonth);
+            const doc = new jsPDF();
+            const monthName = state.currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            doc.setFillColor(12, 18, 48); 
+            doc.rect(0, 0, 210, 42, 'F');
+            doc.setTextColor(255, 255, 255); 
+            doc.setFontSize(16); 
+            doc.text("LABOR STATEMENT & RUNNING BALANCE REPORT", 105, 18, { align: 'center' });
+            doc.setFontSize(9); 
+            doc.setTextColor(190, 210, 240);
+            doc.text("Managed by: Javed Khan | Ph: +91 8306132320", 105, 28, { align: 'center' });
+            
+            doc.setTextColor(30, 41, 59); 
+            doc.setFontSize(10);
+            doc.text("Labor Name: " + labor.name, 15, 50);
+            doc.text("Daily Rate: Rs. " + labor.salaryAmount + "/Day", 140, 50);
+            doc.text("Month: " + monthName, 15, 57);
+            const prevPrefix = summary.previousBalance >= 0 ? '+' : '';
+            doc.text("Prev Rollover Balance: Rs. " + prevPrefix + summary.previousBalance, 140, 57);
+
+            const rows = [];
+            const daysInMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0).getDate();
+            const att = state.attendance[labor.id] || {};
+            const adv = state.advances[labor.id] || {};
+            const advDet = state.advanceDetails[labor.id] || {};
+            
+            for(let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), i);
+                const dStr = getLocalISO(date);
+                const s = att[dStr];
+                const rBal = getRunningBalanceUpToDate(labor.id, dStr);
+
+                if(s || adv[dStr]) {
+                    if(state.reportFilter === 'present' && !['present','onehalf','double'].includes(s)) continue;
+                    if(state.reportFilter === 'half' && s !== 'half') continue;
+                    if(state.reportFilter === 'absent' && s !== 'absent') continue;
+                    if(state.reportFilter === 'advance' && !adv[dStr]) continue;
+                    
+                    let reportStatusText = (s || '-').toUpperCase();
+                    if(s === 'half') reportStatusText = '1/2 (HALF)';
+                    else if(s === 'onehalf') reportStatusText = 'P + 1/2';
+                    else if(s === 'double') reportStatusText = 'P + P (2P)';
+                    
+                    const rmk = (advDet[dStr] && advDet[dStr].remark) ? " (" + advDet[dStr].remark + ")" : '';
+                    rows.push([
+                        date.toLocaleDateString('en-GB'), 
+                        reportStatusText, 
+                        "Rs. " + (adv[dStr] || 0) + rmk,
+                        "Rs. " + rBal
+                    ]);
+                }
+            }
+
+            doc.autoTable({ 
+                startY: 64, 
+                head: [['Date', 'Attendance', 'Payment Received & Remark', 'Running Balance']], 
+                body: rows,
+                headStyles: { fillColor: [12, 18, 48], textColor: [255, 255, 255] }
+            });
+            
+            const finalY = doc.lastAutoTable.finalY + 8;
+            doc.setDrawColor(226, 232, 240);
+            doc.line(15, finalY, 195, finalY);
+            
+            doc.setFontSize(9.5);
+            doc.text("Previous Month Rollover: Rs. " + prevPrefix + summary.previousBalance, 15, finalY + 6);
+            doc.text("Current Month Earned: Rs. " + summary.totalEarnings, 15, finalY + 12);
+            doc.text("Current Month Payment: Rs. " + summary.totalAdvance, 15, finalY + 18);
+            doc.setFontSize(11);
+            doc.setTextColor(summary.balance >= 0 ? 14 : 234, summary.balance >= 0 ? 165 : 46, summary.balance >= 0 ? 115 : 73);
+            doc.text("Net Payable Settlement: Rs. " + summary.balance, 15, finalY + 26);
+
+            doc.save(labor.name + "_" + monthName + "_Statement.pdf"); 
+            notify("PDF Downloaded");
+        }
+
+        function switchTab(t) { 
+            state.currentTab = t; 
+            state.currentView = 'list'; 
+            updateUI(); 
+        }
+
+        function openLabor(id) {
+            state.selectedLaborId = id;
+            state.currentView = 'detail';
+
+            const att = state.attendance[id] || {};
+            const adv = state.advances[id] || {};
+            const recordedDates = [];
+
+            // Collect all dates where attendance is marked
+            Object.keys(att).forEach(d => {
+                if (att[d]) recordedDates.push(d);
+            });
+
+            // Collect all dates where payment/advance is recorded
+            Object.keys(adv).forEach(d => {
+                if (parseFloat(adv[d]) > 0 && !recordedDates.includes(d)) {
+                    recordedDates.push(d);
+                }
+            });
+
+            // If labor has recorded dates, open the latest recorded month
+            if (recordedDates.length > 0) {
+                recordedDates.sort(); // Lexicographical sort works accurately for 'YYYY-MM-DD'
+                const latestDateStr = recordedDates[recordedDates.length - 1];
+                const parts = latestDateStr.split('-');
+                if (parts.length >= 2) {
+                    const y = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10) - 1; // 0-indexed month
+                    state.currentMonth = new Date(y, m, 1);
+                }
+            } else {
+                state.currentMonth = new Date();
+            }
+
+            updateUI();
+        }
+
+        function goBack() { 
+            if(state.currentView === 'detail' || state.currentView === 'report') state.currentView = 'list';
+            else if(state.currentView === 'add' || state.currentView === 'edit') state.currentView = state.selectedLaborId ? 'detail' : 'list';
+            updateUI(); 
+        }
+
+        function changeMonth(d) {
+            state.currentMonth.setMonth(state.currentMonth.getMonth() + d);
+            updateUI();
+        }
+
+        function handleAttendanceClick(dStr, type) {
+            const todayStr = getLocalISO(new Date());
+            if (dStr > todayStr) { notify("Future date attendance not allowed!"); return; }
+            if (type === 'present') { 
+                state.selectedDateKey = dStr; 
+                openAttendanceModal(new Date(dStr)); 
+            } else {
+                if(!state.attendance[state.selectedLaborId]) state.attendance[state.selectedLaborId] = {};
+                const curr = state.attendance[state.selectedLaborId][dStr];
+                state.attendance[state.selectedLaborId][dStr] = (curr === type) ? null : type;
+                sync(); updateUI();
+            }
+        }
+
+        function saveAttendance(status) {
+            const todayStr = getLocalISO(new Date());
+            if (state.selectedDateKey > todayStr) { 
+                notify("Future date attendance not allowed!"); 
+                closeAttendanceModal(); 
+                return; 
+            }
+            if(!state.attendance[state.selectedLaborId]) state.attendance[state.selectedLaborId] = {};
+            const curr = state.attendance[state.selectedLaborId][state.selectedDateKey];
+            state.attendance[state.selectedLaborId][state.selectedDateKey] = (curr === status) ? null : status;
+            sync(); 
+            closeAttendanceModal(); 
+            updateUI();
+        }
+
+        function triggerAdvance(d) {
+            const todayStr = getLocalISO(new Date());
+            if (d > todayStr) { 
+                notify("Payment cannot be recorded for future dates!"); 
+                return; 
+            }
+            state.selectedDateKey = d;
+            const l = state.selectedLaborId; 
+            const det = (state.advanceDetails[l] && state.advanceDetails[l][d]) || null;
+            const exTotal = (state.advances[l] && state.advances[l][d]) || 0;
+            const stats = getCumulativeWorkStatsUpToDate(d);
+
+            const rateHint = document.getElementById('modal-daily-rate-hint');
+            if (rateHint) {
+                if (stats.hasAttendanceToday) {
+                    const unitStr = stats.currentDayUnits === 0.5 ? '½ Half Day' : (stats.currentDayUnits + ' Day');
+                    rateHint.innerText = "Daily Rate: ₹" + stats.rate + "/Day (" + unitStr + " = ₹" + stats.currentDayEarned + ")";
+                } else {
+                    rateHint.innerText = "Daily Rate: ₹" + stats.rate + "/Day (No Attendance = ₹0 Earned)";
+                }
+            }
+
+            const workDaysElem = document.getElementById('modal-work-days-count');
+            const workEarnElem = document.getElementById('modal-work-earnings-count');
+            const prevRolloverElem = document.getElementById('modal-prev-rollover-display');
+            
+            if (workDaysElem) workDaysElem.innerText = "काम: " + stats.totalDaysWorked + " दिन";
+            if (workEarnElem) workEarnElem.innerText = "कुल हकदार: ₹" + stats.totalEarned;
+            if (prevRolloverElem) {
+                const prevPrefix = stats.prevBalance >= 0 ? '+' : '';
+                prevRolloverElem.innerText = prevPrefix + "₹" + stats.prevBalance;
+                prevRolloverElem.className = "num-tabular font-black " + (stats.prevBalance < 0 ? 'text-rose-600' : 'text-emerald-700');
+            }
+
+            const extraInput = document.getElementById('extra-advance-input');
+            if (extraInput) extraInput.dataset.manual = 'false';
+
+            if (det) {
+                document.getElementById('advance-input').value = det.received || '';
+                if (extraInput) extraInput.value = det.extra || '';
+                document.getElementById('advance-remark-input').value = det.remark || '';
+            } else {
+                document.getElementById('advance-input').value = exTotal || '';
+                const baseTarget = stats.totalEarned;
+                if (exTotal > baseTarget) {
+                    const diff = exTotal - baseTarget;
+                    if (extraInput) extraInput.value = diff;
+                    document.getElementById('advance-remark-input').value = "RS " + diff + " EXTRA ADVANCE";
+                } else {
+                    if (extraInput) extraInput.value = '';
+                    document.getElementById('advance-remark-input').value = exTotal ? "RS " + exTotal + " AMOUNT RECEIVE" : '';
+                }
+            }
+
+            const advDateEl = document.getElementById('advance-modal-date');
+            if (advDateEl) advDateEl.innerText = new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            
+            const m = document.getElementById('advance-modal'); 
+            m.classList.remove('hidden'); 
+            m.classList.add('flex');
+            setTimeout(() => { 
+                document.body.classList.add('modal-open'); 
+                const inp = document.getElementById('advance-input');
+                if (inp) inp.focus(); 
+            }, 10);
+        }
+
+        function handleAmountReceivedInput() {
+            const recv = parseFloat(document.getElementById('advance-input').value) || 0;
+            const extraInput = document.getElementById('extra-advance-input');
+            const stats = getCumulativeWorkStatsUpToDate(state.selectedDateKey || getLocalISO(new Date()));
+            
+            const earnedThreshold = stats.totalEarned;
+
+            if (recv > earnedThreshold) {
+                const diff = recv - earnedThreshold;
+                if (extraInput) extraInput.value = diff;
+            } else if (extraInput && extraInput.dataset.manual !== 'true') {
+                extraInput.value = 0;
+            }
+
+            updateAdvanceRemark();
+        }
+
+        function handleExtraAdvanceInput() {
+            const extraInput = document.getElementById('extra-advance-input');
+            if (extraInput) extraInput.dataset.manual = 'true';
+            updateAdvanceRemark();
+        }
+
+        function updateAdvanceRemark() {
+            const recv = parseFloat(document.getElementById('advance-input').value) || 0;
+            const extraInput = document.getElementById('extra-advance-input');
+            const extra = parseFloat(extraInput ? extraInput.value : 0) || 0;
+            const remarkInput = document.getElementById('advance-remark-input');
+            if (!remarkInput) return;
+
+            if (extra > 0) {
+                remarkInput.value = "RS " + extra + " EXTRA ADVANCE";
+            } else if (recv > 0) {
+                remarkInput.value = "RS " + recv + " AMOUNT RECEIVE";
+            } else {
+                remarkInput.value = '';
+            }
+        }
+
+        function addQuickAdvanceValue(val) {
+            const inp = document.getElementById('advance-input');
+            if (!inp) return;
+            inp.value = (parseFloat(inp.value) || 0) + val;
+            handleAmountReceivedInput();
+        }
+
+        function saveAdvanceAmount() {
+            const todayStr = getLocalISO(new Date());
+            if (state.selectedDateKey > todayStr) { notify("Future advance not allowed!"); closeAdvanceModal(); return; }
+            
+            const recv = parseFloat(document.getElementById('advance-input').value) || 0;
+            const extraInput = document.getElementById('extra-advance-input');
+            const extra = parseFloat(extraInput ? extraInput.value : 0) || 0;
+            const remark = document.getElementById('advance-remark-input').value.trim();
+            const stats = getCumulativeWorkStatsUpToDate(state.selectedDateKey || todayStr);
+            const earnedThreshold = stats.totalEarned;
+            
+            let total = recv;
+            if (extra > 0 && recv <= earnedThreshold && extraInput && extraInput.dataset.manual === 'true') {
+                total = recv + extra;
+            }
+
+            if(!state.advances[state.selectedLaborId]) state.advances[state.selectedLaborId] = {};
+            if(!state.advanceDetails[state.selectedLaborId]) state.advanceDetails[state.selectedLaborId] = {};
+
+            state.advances[state.selectedLaborId][state.selectedDateKey] = total;
+            state.advanceDetails[state.selectedLaborId][state.selectedDateKey] = {
+                received: recv,
+                extra: extra,
+                remark: remark
+            };
+
+            sync(); 
+            closeAdvanceModal(); 
+            updateUI(); 
+            notify("Payment Saved");
+        }
+
+        function openAttendanceModal(date) { 
+            const dStr = getLocalISO(date);
+            const todayStr = getLocalISO(new Date());
+            if (dStr > todayStr) { notify("Future date attendance not allowed!"); return; }
+            const dateEl = document.getElementById('modal-date');
+            if (dateEl) dateEl.innerText = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); 
+            const m = document.getElementById('attendance-modal'); 
+            m.classList.remove('hidden'); 
+            m.classList.add('flex'); 
+            setTimeout(() => document.body.classList.add('modal-open'), 10); 
+        }
+
+        function closeAttendanceModal() { 
+            document.body.classList.remove('modal-open'); 
+            setTimeout(() => {
+                const el = document.getElementById('attendance-modal');
+                if (el) el.classList.add('hidden');
+            }, 260); 
+        }
+
+        function closeAdvanceModal() { 
+            document.body.classList.remove('modal-open'); 
+            setTimeout(() => {
+                const el = document.getElementById('advance-modal');
+                if (el) el.classList.add('hidden');
+            }, 260); 
+        }
+
+        function renderCategoryButtons(type) {
+            const container = document.getElementById('cashbook-category-container');
+            const label = document.getElementById('category-section-label');
+            if (!container || !label) return;
+            container.innerHTML = '';
+            let cats = (type === 'in') ? CASH_IN_CATEGORIES : CASH_OUT_CATEGORIES;
+            label.innerText = (type === 'in') ? 'Category (Income):' : 'Category (Expense):';
+
+            cats.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'category-chip p-2.5 rounded-xl text-center flex flex-col items-center gap-1 active:scale-95 bg-white shadow-xs';
+                btn.setAttribute('data-value', cat.value);
+                btn.onclick = () => selectCashbookCategory(cat.value);
+                btn.innerHTML = '<span class="text-lg leading-none">' + cat.icon + '</span><span class="text-[9px] font-extrabold text-slate-700 leading-tight">' + cat.label + '</span>';
+                container.appendChild(btn);
+            });
+        }
+
+        function openCashbookModal(type) {
+            state.cashbookModalType = type;
+            state.selectedCategory = '';
+            state.selectedPaymentMode = 'cash';
+            
+            const todayStr = getLocalISO(new Date());
+            const monthPrefix = getLocalISO(state.cashbookMonth).substring(0, 7);
+            const dateInput = document.getElementById('cashbook-date-input');
+            
+            if (dateInput) {
+                dateInput.value = todayStr.startsWith(monthPrefix) ? todayStr : (monthPrefix + '-01');
+                dateInput.max = todayStr;
+            }
+
+            const titleEl = document.getElementById('cashbook-modal-title');
+            if (titleEl) titleEl.innerText = (type === 'in') ? '💵 Add Income' : '💸 Add Expense';
+            
+            const amtInp = document.getElementById('cashbook-amount-input');
+            if (amtInp) amtInp.value = '';
+            const remInp = document.getElementById('cashbook-remark-input');
+            if (remInp) remInp.value = '';
+            
+            renderCategoryButtons(type);
+            selectCashbookMode('cash');
+
+            const m = document.getElementById('cashbook-modal'); 
+            m.classList.remove('hidden'); 
+            m.classList.add('flex'); 
+            setTimeout(() => { 
+                document.body.classList.add('modal-open'); 
+                if (amtInp) amtInp.focus(); 
+            }, 10);
+        }
+
+        function closeCashbookModal() { 
+            document.body.classList.remove('modal-open'); 
+            setTimeout(() => {
+                const el = document.getElementById('cashbook-modal');
+                if (el) el.classList.add('hidden');
+            }, 260); 
+        }
+
+        function addQuickValue(val) { 
+            const inp = document.getElementById('cashbook-amount-input'); 
+            if (inp) inp.value = (parseFloat(inp.value) || 0) + val; 
+        }
+        
+        function selectCashbookCategory(cat) {
+            state.selectedCategory = cat;
+            document.querySelectorAll('.category-chip').forEach(c => {
+                c.classList.remove('selected');
+                if (c.getAttribute('data-value') === cat) c.classList.add('selected');
+            });
+        }
+
+        function selectCashbookMode(mode) {
+            state.selectedPaymentMode = mode;
+            const cashBtn = document.getElementById('mode-cash-btn');
+            const onlineBtn = document.getElementById('mode-online-btn');
+            if (!cashBtn || !onlineBtn) return;
+            if (mode === 'cash') {
+                cashBtn.className = "py-2.5 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-extrabold text-xs active:scale-95 flex items-center justify-center gap-1.5";
+                onlineBtn.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold text-xs active:scale-95 flex items-center justify-center gap-1.5";
+            } else {
+                cashBtn.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold text-xs active:scale-95 flex items-center justify-center gap-1.5";
+                onlineBtn.className = "py-2.5 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-extrabold text-xs active:scale-95 flex items-center justify-center gap-1.5";
+            }
+        }
+
+        function saveCashbookEntry() {
+            const amt = parseFloat(document.getElementById('cashbook-amount-input').value) || 0;
+            if (amt <= 0) { notify("Please enter a valid amount"); return; }
+            if (!state.selectedCategory) { notify("Please select a category"); return; }
+
+            const selectedDate = document.getElementById('cashbook-date-input').value || getLocalISO(new Date());
+            state.cashbook.push({
+                id: Date.now().toString(),
+                type: state.cashbookModalType,
+                amount: amt,
+                category: state.selectedCategory,
+                date: selectedDate,
+                mode: state.selectedPaymentMode,
+                remark: document.getElementById('cashbook-remark-input').value.trim()
+            });
+            sync(); 
+            closeCashbookModal(); 
+            updateUI(); 
+            notify("Entry Saved");
+        }
+
+        function deleteCashbookEntry(id, isLinkedOrVirtual) {
+            if (isLinkedOrVirtual) { notify("Auto-entry. Change via Attendance/Payment."); return; }
+            customConfirm("Delete this cashbook entry?", () => {
+                state.cashbook = state.cashbook.filter(e => e.id !== id);
+                sync(); updateUI(); notify("Entry deleted");
+            });
+        }
+
+        function changeCashbookMonth(d) {
+            state.cashbookMonth.setMonth(state.cashbookMonth.getMonth() + d);
+            updateUI();
+        }
+
+        function getCashbookTotals(monthDate) {
+            let totalIn = 0, totalOut = 0, todayIn = 0, todayOut = 0;
+            const todayStr = getLocalISO(new Date());
+            const monthPrefix = monthDate ? getLocalISO(monthDate).substring(0, 7) : null;
+
+            state.cashbook.forEach(entry => {
+                if (monthPrefix && entry.date && !entry.date.startsWith(monthPrefix)) return;
+                if (entry.type === 'in') totalIn += entry.amount;
+                else if (entry.type === 'out') totalOut += entry.amount;
+            });
+
+            const attEarnings = getOverallAttendanceEarnings(monthDate);
+            totalIn += attEarnings;
+
+            let allAdvances = 0;
+            state.labors.forEach(labor => {
+                const adv = state.advances[labor.id] || {};
+                Object.keys(adv).forEach(dStr => {
+                    if (monthPrefix && !dStr.startsWith(monthPrefix)) return;
+                    const amt = parseFloat(adv[dStr]) || 0;
+                    allAdvances += amt;
+                });
+            });
+            totalOut += allAdvances;
+
+            state.cashbook.forEach(entry => {
+                if (entry.date === todayStr) {
+                    if (entry.type === 'in') todayIn += entry.amount;
+                    else if (entry.type === 'out') todayOut += entry.amount;
+                }
+            });
+            todayIn += getTodayAttendanceEarnings();
+            state.labors.forEach(labor => {
+                const adv = state.advances[labor.id] || {};
+                todayOut += parseFloat(adv[todayStr]) || 0;
+            });
+
+            return { totalIn, totalOut, balance: totalIn - totalOut, todayIn, todayOut, attEarnings, allAdvances };
+        }
+
+        function getCombinedCashbookEntries(monthDate) {
+            const monthPrefix = monthDate ? getLocalISO(monthDate).substring(0, 7) : null;
+            const list = [...state.cashbook]
+                .filter(e => !monthPrefix || (e.date && e.date.startsWith(monthPrefix)))
+                .map(e => ({ ...e, isVirtual: false }));
+            const dailyEarnings = {}; 
+            
+            state.labors.forEach(labor => {
+                const att = state.attendance[labor.id] || {};
+                const rate = parseFloat(labor.salaryAmount) || 0;
+                
+                Object.keys(att).forEach(dStr => {
+                    if (monthPrefix && !dStr.startsWith(monthPrefix)) return;
+                    const s = att[dStr];
+                    let pDays = 0;
+                    if(s === 'present') pDays = 1; 
+                    else if(s === 'half') pDays = 0.5;
+                    else if(s === 'onehalf') pDays = 1.5; 
+                    else if(s === 'double') pDays = 2;
+                    const earned = pDays * rate;
+                    if (earned > 0) dailyEarnings[dStr] = (dailyEarnings[dStr] || 0) + earned;
+                });
+
+                const adv = state.advances[labor.id] || {};
+                const advDet = state.advanceDetails[labor.id] || {};
+                Object.keys(adv).forEach(dStr => {
+                    if (monthPrefix && !dStr.startsWith(monthPrefix)) return;
+                    const amt = parseFloat(adv[dStr]) || 0;
+                    if (amt > 0) {
+                        const rmk = (advDet[dStr] && advDet[dStr].remark) ? labor.name + " (" + advDet[dStr].remark + ")" : labor.name;
+                        list.push({
+                            id: 'virtual_adv_' + labor.id + '_' + dStr,
+                            type: 'out', amount: amt, category: '👷 Labor Payment', date: dStr, mode: 'cash',
+                            remark: rmk, isVirtual: true
+                        });
+                    }
+                });
+            });
+
+            Object.keys(dailyEarnings).forEach(dStr => {
+                list.push({
+                    id: 'virtual_att_' + dStr,
+                    type: 'in', amount: dailyEarnings[dStr], category: '👷 Attendance', date: dStr, mode: 'cash',
+                    remark: 'Auto-Income from (P)', isVirtual: true
+                });
+            });
+            return list;
+        }
+
+        function updateUI() {
+            const main = document.getElementById('main-content');
+            const hTitle = document.getElementById('header-title');
+            const bBtn = document.getElementById('back-btn');
+            const hRight = document.getElementById('header-right');
+
+            if (!main || !hTitle || !bBtn || !hRight) return;
+
+            hRight.innerHTML = ''; 
+            bBtn.classList.toggle('hidden', state.currentView === 'list' && state.currentTab === 'labors');
+
+            document.querySelectorAll('#bottom-nav button').forEach(el => { 
+                el.classList.remove('nav-item-active');
+            });
+            const activeNav = document.getElementById('nav-' + state.currentTab);
+            if (activeNav) { 
+                activeNav.classList.add('nav-item-active');
+            }
+
+            if (state.currentTab === 'labors') {
+                if (state.currentView === 'list') { 
+                    hTitle.innerText = "LABORS"; 
+                    renderLaborList(main); 
+                }
+                else if (state.currentView === 'detail') {
+                    const labor = state.labors.find(l => l.id === state.selectedLaborId);
+                    if(labor) {
+                        hTitle.innerText = labor.name;
+                        hRight.innerHTML = '<button onclick="state.currentView=\'edit\'; updateUI();" class="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-white"><i class="fa-solid fa-pen-to-square text-sm"></i></button>';
+                        renderLaborDetail(main, labor);
+                    } else { 
+                        state.currentView = 'list'; 
+                        updateUI(); 
+                    }
+                } else if (state.currentView === 'report') {
+                    hTitle.innerText = "STATEMENT REPORT"; 
+                    renderReport(main, state.labors.find(l => l.id === state.selectedLaborId));
+                } else if (state.currentView === 'add' || state.currentView === 'edit') {
+                    hTitle.innerText = state.currentView === 'edit' ? "EDIT PROFILE" : "NEW PROFILE";
+                    renderLaborForm(main, state.selectedLaborId ? state.labors.find(l => l.id === state.selectedLaborId) : null);
+                }
+            } else if (state.currentTab === 'settings') {
+                hTitle.innerText = "SETTINGS"; 
+                renderSettings(main);
+            } else if (state.currentTab === 'cashbook') {
+                hTitle.innerText = "CASHBOOK"; 
+                renderCashbook(main);
+            }
+        }
+
+        // Labor List with Rollover Due Balance
+        function renderLaborList(container) {
+            let html = '<div class="p-4 flex flex-col gap-3">';
+            if (state.labors.length === 0) {
+                html += `
+                    <div class="py-20 text-center flex flex-col items-center justify-center">
+                        <div class="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mb-3 shadow-xs">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <h4 class="font-extrabold text-slate-800 text-sm">No Labors Found</h4>
+                        <p class="text-xs text-slate-400 mt-1">Tap '+ ADD LABOR' below to create a profile.</p>
+                    </div>`;
+            } else {
+                state.labors.forEach(l => {
+                    const sum = getSummary(l.id, state.currentMonth);
+                    html += `
+                    <div onclick="openLabor('${l.id}')" 
+                        class="bg-white rounded-3xl border border-[#edf2f7] p-4 flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.02)] active:scale-[0.99] transition-all cursor-pointer fade-in">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-full bg-[#2c58ee] flex items-center justify-center text-white font-extrabold text-lg shadow-sm flex-shrink-0">
+                                ${l.name.charAt(0)}
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-black text-slate-900 uppercase text-sm tracking-wide truncate">${l.name}</h3>
+                                <div class="flex items-center gap-2 mt-0.5 text-xs">
+                                    <span class="text-slate-400 font-bold num-tabular">${l.phone || 'Null'}</span>
+                                    <span class="text-slate-300">•</span>
+                                    <span class="text-[#2c58ee] font-black num-tabular">₹${l.salaryAmount}/Day</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="text-right">
+                                <span class="text-[9.5px] font-black text-slate-400 uppercase tracking-tight block">DUE BALANCE:</span>
+                                <span class="text-base font-black num-tabular ${sum.balance >= 0 ? 'text-slate-900' : 'text-[#ea2e49]'}">₹${sum.balance}</span>
+                            </div>
+                            <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 ml-1">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+            html += `</div>
+            <button onclick="state.selectedLaborId=null; state.currentView='add'; updateUI();" 
+                class="btn-add-labor fixed bottom-20 right-4 sm:right-6 text-white py-3 px-5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center gap-2 active:scale-95 transition-transform z-30">
+                <i class="fa-solid fa-plus text-xs"></i> ADD LABOR
+            </button>`;
+            container.innerHTML = html;
+        }
+
+        // Labor Details & Attendance Register with Running Balance
+        function renderLaborDetail(container, labor) {
+            const summary = getSummary(labor.id, state.currentMonth);
+            const daysInMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0).getDate();
+            const att = state.attendance[labor.id] || {};
+            const adv = state.advances[labor.id] || {};
+            const todayStr = getLocalISO(new Date());
+            
+            const monthFormatted = state.currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+
+            let html = `
+                <!-- Curved Hero at Top -->
+                <div class="curved-header-hero text-white px-5 pb-9 pt-1 shadow-inner">
+                    <p class="text-slate-300 text-xs font-bold uppercase tracking-wider num-tabular">
+                        ${labor.phone} • ₹${labor.salaryAmount}/Day
+                    </p>
+                </div>
+
+                <div class="p-3.5 flex flex-col gap-3 -mt-6">
+                    <!-- 4 Top Cards from Image 2 -->
+                    <div class="grid grid-cols-4 gap-2">
+                        <!-- Card 1: ATTENDANCE -->
+                        <div class="bg-white rounded-2xl border border-[#edf2f7] p-2 flex flex-col items-center justify-center text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                            <div class="w-7 h-7 rounded-full bg-emerald-50 text-[#0ea573] flex items-center justify-center text-xs mb-1.5 border border-emerald-100">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-sm font-black text-slate-900 num-tabular leading-tight">${summary.present}</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1">ATTENDANCE</span>
+                        </div>
+
+                        <!-- Card 2: TOTAL EARNED -->
+                        <div class="bg-white rounded-2xl border border-[#edf2f7] p-2 flex flex-col items-center justify-center text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                            <div class="w-7 h-7 rounded-full bg-blue-50 text-[#2c58ee] flex items-center justify-center text-xs mb-1.5 border border-blue-100">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <span class="text-sm font-black text-slate-900 num-tabular leading-tight">₹${summary.totalEarnings}</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1">TOTAL EARNED</span>
+                        </div>
+
+                        <!-- Card 3: PAYMENT RECEIVED -->
+                        <div class="bg-white rounded-2xl border border-[#edf2f7] p-2 flex flex-col items-center justify-center text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                            <div class="w-7 h-7 rounded-full bg-rose-50 text-[#ea2e49] flex items-center justify-center text-xs mb-1.5 border border-rose-100">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                            </div>
+                            <span class="text-sm font-black text-slate-900 num-tabular leading-tight">₹${summary.totalAdvance}</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1">PAYMENT RECEIVED</span>
+                        </div>
+
+                        <!-- Card 4: NET DUE -->
+                        <div class="bg-white rounded-2xl border border-[#edf2f7] p-2 flex flex-col items-center justify-center text-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                            <div class="w-7 h-7 rounded-full ${summary.balance >= 0 ? 'bg-amber-50 text-[#f59e0b] border-amber-100' : 'bg-rose-50 text-[#ea2e49] border-rose-100'} flex items-center justify-center text-xs mb-1.5 border">
+                                <i class="fa-solid fa-sack-dollar"></i>
+                            </div>
+                            <span class="text-sm font-black ${summary.balance >= 0 ? 'text-slate-900' : 'text-[#ea2e49]'} num-tabular leading-tight">₹${summary.balance}</span>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mt-1">NET DUE</span>
+                        </div>
+                    </div>
+
+                    <!-- Automatic Rollover Status Banner -->
+                    ${summary.previousBalance !== 0 ? `
+                        <div class="p-3 rounded-2xl border flex items-center justify-between text-xs font-black shadow-xs ${
+                            summary.previousBalance < 0 
+                                ? 'bg-rose-50 border-rose-200 text-rose-800' 
+                                : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        }">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid ${summary.previousBalance < 0 ? 'fa-triangle-exclamation text-rose-600' : 'fa-circle-check text-emerald-600'} text-sm"></i>
+                                <span>${summary.previousBalance < 0 ? 'पिछला एक्स्ट्रा एडवांस (माइनस):' : 'पिछला बकाया रोलओवर (प्लस):'}</span>
+                            </div>
+                            <span class="num-tabular font-black text-sm ${summary.previousBalance < 0 ? 'text-rose-600' : 'text-emerald-700'}">
+                                ${summary.previousBalance < 0 ? `-₹${Math.abs(summary.previousBalance)}` : `+₹${summary.previousBalance}`}
+                            </span>
+                        </div>
+                    ` : ''}
+
+                    <!-- Month Switcher with Subtitle -->
+                    <div class="bg-white rounded-2xl border border-[#edf2f7] flex items-center justify-between p-2 shadow-xs">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-500 bg-slate-50 rounded-xl active:bg-slate-100">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <div class="flex flex-col items-center">
+                            <span class="font-black text-slate-900 uppercase text-xs tracking-wide">${monthFormatted}</span>
+                            <span class="text-[9px] font-black text-[#2c58ee] uppercase tracking-wider mt-0.5">MONTHLY ATTENDANCE</span>
+                        </div>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-500 bg-slate-50 rounded-xl active:bg-slate-100">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Open Statement Report Button -->
+                    <button onclick="state.currentView='report'; updateUI();" 
+                        class="btn-statement-report w-full text-white py-3.5 rounded-2xl font-black uppercase text-xs tracking-wider flex items-center justify-center gap-2 active:scale-[0.99] transition-transform">
+                        <i class="fa-solid fa-file-invoice text-sm"></i> OPEN STATEMENT REPORT
+                    </button>
+
+                    <!-- Daily Attendance Register Table with Running Balance -->
+                    <div class="bg-white border border-[#edf2f7] rounded-3xl overflow-hidden shadow-xs">
+                        <div class="bg-white grid grid-cols-[44px_auto_minmax(120px,1fr)] sm:grid-cols-[52px_auto_minmax(145px,1fr)] p-2.5 sm:p-3 text-[9px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 items-center">
+                            <span>DATE</span>
+                            <span class="text-center px-1">ATTENDANCE</span>
+                            <span class="text-right">PAYMENT & RUNNING</span>
+                        </div>
+
+                        <div class="divide-y divide-slate-100">`;
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), i);
+                const dStr = getLocalISO(date);
+                const s = att[dStr];
+                const isFuture = dStr > todayStr;
+                const advAmt = adv[dStr] || 0;
+                const det = (state.advanceDetails[labor.id] && state.advanceDetails[labor.id][dStr]) || {};
+                const extraAmt = det.extra || 0;
+                const remarkText = det.remark || (advAmt > 0 ? (extraAmt > 0 ? ("RS " + extraAmt + " EXTRA ADVANCE") : ("RS " + advAmt + " AMOUNT RECEIVE")) : '');
+                
+                const runningBal = getRunningBalanceUpToDate(labor.id, dStr);
+
+                let pBtnText = 'P';
+                let pBtnClass = '';
+                if (s === 'half') {
+                    pBtnText = '½';
+                    pBtnClass = 'active-half';
+                } else if (s === 'onehalf') {
+                    pBtnText = 'P+½';
+                    pBtnClass = 'active-p';
+                } else if (s === 'double') {
+                    pBtnText = 'P+P';
+                    pBtnClass = 'active-p';
+                } else if (s === 'present') {
+                    pBtnText = 'P';
+                    pBtnClass = 'active-p';
+                }
+                
+                html += `
+                    <div class="grid grid-cols-[44px_auto_minmax(120px,1fr)] sm:grid-cols-[52px_auto_minmax(145px,1fr)] p-2 sm:p-3 items-center hover:bg-slate-50/50 transition-colors fade-in gap-1 sm:gap-2">
+                        <!-- Date Column -->
+                        <div class="flex flex-col flex-shrink-0">
+                            <span class="font-black text-slate-800 text-xs sm:text-sm leading-none num-tabular ${isFuture ? 'text-slate-300' : ''}">${i.toString().padStart(2, '0')}</span>
+                            <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase mt-0.5">${date.toLocaleDateString('en-US',{weekday:'short'})}</span>
+                        </div>
+
+                        <!-- Attendance Badges: P, A, OT, Off -->
+                        <div class="flex justify-center items-center gap-1 sm:gap-1.5 flex-shrink-0 ${isFuture ? 'opacity-20 pointer-events-none' : ''}">
+                            <button type="button" onclick="handleAttendanceClick('${dStr}', 'present')" class="att-circle ${pBtnClass}">${pBtnText}</button>
+                            <button type="button" onclick="handleAttendanceClick('${dStr}', 'absent')" class="att-circle ${s === 'absent' ? 'active-a' : ''}">A</button>
+                            <button type="button" onclick="handleAttendanceClick('${dStr}', 'ot')" class="att-circle ${s === 'ot' ? 'active-ot' : ''}">OT</button>
+                            <button type="button" onclick="handleAttendanceClick('${dStr}', 'off')" class="att-circle ${s === 'off' ? 'active-off' : ''}">Off</button>
+                        </div>
+
+                        <!-- Payment Received + Running Balance + Extra Advance + Remark -->
+                        <div ${isFuture ? '' : `onclick="triggerAdvance('${dStr}')"`} 
+                            class="flex flex-col items-end justify-center min-w-0 text-right cursor-pointer py-1 px-1 rounded-xl hover:bg-blue-50/40 active:scale-[0.98] transition-all ${isFuture ? 'opacity-30 pointer-events-none' : ''}">
+                            
+                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                <span class="text-xs sm:text-sm font-black num-tabular leading-tight ${advAmt > 0 ? 'text-[#ea2e49]' : 'text-slate-300'}">
+                                    ₹${advAmt}
+                                </span>
+                                
+                                <span class="px-1.5 py-0.5 rounded-md text-[8.5px] font-black num-tabular ${runningBal >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
+                                    BAL: ₹${runningBal}
+                                </span>
+                            </div>
+
+                            ${extraAmt > 0 ? `
+                                <div class="mt-0.5 inline-flex items-center gap-0.5 bg-orange-50 border border-orange-200/80 px-1.5 py-0.2 rounded-md">
+                                    <span class="text-[8px] font-black text-orange-600 uppercase tracking-tighter">EX: ₹${extraAmt}</span>
+                                </div>
+                            ` : ''}
+
+                            ${remarkText ? `
+                                <span class="text-[8px] sm:text-[8.5px] font-bold text-slate-500 truncate max-w-full leading-tight mt-0.5 tracking-tight">
+                                    ${remarkText}
+                                </span>
+                            ` : (advAmt > 0 ? '' : `
+                                <span class="text-[8px] font-bold text-slate-300 italic">+ Pay / Rem</span>
+                            `)}
+                        </div>
+                    </div>`;
+            }
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+        }
+
+        // Cashbook View
+        function renderCashbook(container) {
+            const totals = getCashbookTotals(state.cashbookMonth);
+            const combinedEntries = getCombinedCashbookEntries(state.cashbookMonth);
+            const sortedEntries = combinedEntries.sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+            const monthFormatted = state.cashbookMonth.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+
+            let html = `
+                <div class="p-4 flex flex-col gap-3.5">
+                    <!-- Month Selector Carousel with Subtitle -->
+                    <div class="bg-white rounded-2xl border border-[#edf2f7] flex items-center justify-between p-2 shadow-xs">
+                        <button onclick="changeCashbookMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-500 bg-slate-50 rounded-xl active:bg-slate-100">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <div class="flex flex-col items-center">
+                            <span class="font-black text-slate-900 uppercase text-xs tracking-wide">${monthFormatted}</span>
+                            <span class="text-[9px] font-black text-[#2c58ee] uppercase tracking-wider mt-0.5">CASHBOOK REGISTER</span>
+                        </div>
+                        <button onclick="changeCashbookMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-500 bg-slate-50 rounded-xl active:bg-slate-100">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- 3 Financial Metrics Cards (Image 3) -->
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <div class="bg-white border border-[#edf2f7] rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#0ea573] flex items-center justify-center text-sm mb-1.5 border border-emerald-100">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </div>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-tight">MONTH IN</span>
+                            <span class="text-xs sm:text-sm font-black text-[#0ea573] mt-0.5 num-tabular">₹${totals.totalIn}</span>
+                        </div>
+                        <div class="bg-white border border-[#edf2f7] rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+                            <div class="w-8 h-8 rounded-full bg-rose-50 text-[#ea2e49] flex items-center justify-center text-sm mb-1.5 border border-rose-100">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </div>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-tight">MONTH OUT</span>
+                            <span class="text-xs sm:text-sm font-black text-[#ea2e49] mt-0.5 num-tabular">₹${totals.totalOut}</span>
+                        </div>
+                        <div class="bg-white border border-[#edf2f7] rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+                            <div class="w-8 h-8 rounded-full bg-blue-50 text-[#2c58ee] flex items-center justify-center text-sm mb-1.5 border border-blue-100">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-tight">NET BAL</span>
+                            <span class="text-xs sm:text-sm font-black text-slate-900 mt-0.5 num-tabular">₹${totals.balance}</span>
+                        </div>
+                    </div>
+
+                    <!-- Today snapshot pill with 'This Month' badge -->
+                    <div class="bg-white px-3.5 py-2.5 rounded-2xl border border-[#edf2f7] shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#2c58ee]"></div>
+                            <p class="text-xs font-black text-slate-700 num-tabular">
+                                In: ₹${totals.todayIn} &nbsp;•&nbsp; Out: ₹${totals.todayOut}
+                            </p>
+                        </div>
+                        <button onclick="state.cashbookMonth=new Date(); updateUI();" class="text-[10px] text-[#2c58ee] font-black bg-blue-50 px-3 py-1 rounded-xl border border-blue-100 active:scale-95 transition-transform">
+                            This Month
+                        </button>
+                    </div>
+
+                    <!-- Add Income & Expense Big Buttons -->
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="openCashbookModal('in')" class="bg-[#0ea573] text-white p-3.5 rounded-2xl shadow-sm font-black active:scale-[0.98] transition-transform flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-plus text-xs"></i> INCOME (IN)
+                        </button>
+                        <button onclick="openCashbookModal('out')" class="bg-[#ea2e49] text-white p-3.5 rounded-2xl shadow-sm font-black active:scale-[0.98] transition-transform flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-minus text-xs"></i> EXPENSE (OUT)
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-1">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${monthFormatted} REGISTER</h3>
+                        <span class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-black num-tabular">${sortedEntries.length} Entries</span>
+                    </div>
+
+                    <div class="bg-white border border-[#edf2f7] rounded-3xl overflow-hidden shadow-xs">
+                        <div class="divide-y divide-slate-100">
+            `;
+
+            if (sortedEntries.length === 0) {
+                html += `<div class="p-10 text-center text-slate-400 font-extrabold text-xs opacity-60">No entries in ${monthFormatted}.</div>`;
+            } else {
+                sortedEntries.forEach(entry => {
+                    const isLinkedOrVirtual = !!entry.isVirtual; 
+                    const dateFormatted = new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                    const amountColor = entry.type === 'in' ? 'text-[#0ea573]' : 'text-[#ea2e49]';
+                    const sign = entry.type === 'in' ? '+' : '-';
+                    const modeTag = entry.isVirtual ? 'AUTO' : (entry.mode === 'cash' ? 'CASH' : 'UPI');
+
+                    html += `
+                        <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors fade-in">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 text-base">
+                                    <span>👷</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <h4 class="font-black text-slate-900 text-xs truncate">
+                                            ${entry.category.substring(entry.category.indexOf(' ') + 1) || entry.category}
+                                        </h4>
+                                        <span class="text-[8px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-black uppercase">${modeTag}</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                        ${entry.remark ? entry.remark : 'No remarks'} • <span class="num-tabular">${dateFormatted}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <span class="text-xs sm:text-sm font-black num-tabular ${amountColor}">${sign}₹${entry.amount}</span>
+                                <button onclick="deleteCashbookEntry('${entry.id}', ${isLinkedOrVirtual})" class="p-1 text-slate-300 hover:text-rose-500 active:text-rose-600 transition-all ${isLinkedOrVirtual ? 'opacity-25 cursor-not-allowed' : ''}">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+        }
+
+        // Settings View
+        function renderSettings(container) {
+            container.innerHTML = `
+                <div class="p-4 flex flex-col gap-3.5">
+                    <!-- Profile Card -->
+                    <div class="bg-white p-7 rounded-3xl border border-[#edf2f7] flex flex-col items-center justify-center text-center shadow-xs">
+                        <div class="w-16 h-16 rounded-2xl bg-[#2c58ee] text-white flex items-center justify-center text-xl font-black mb-3 shadow-md shadow-blue-500/25">
+                            JK
+                        </div>
+                        <h2 class="font-black text-slate-900 text-lg tracking-tight">Javed Khan</h2>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-wider mt-0.5">TOOL DEVELOPED BY</p>
+                        
+                        <a href="tel:8306132320" class="text-xs text-[#2c58ee] font-black mt-3.5 bg-blue-50/60 px-5 py-2 rounded-full border border-blue-100 flex items-center gap-2 active:scale-95 transition-all">
+                            <i class="fa-solid fa-phone text-[#2c58ee] text-xs"></i> +91 8306132320
+                        </a>
+                    </div>
+                    
+                    <!-- Export Backup Card -->
+                    <div onclick="exportJSON()" class="bg-white p-4 rounded-3xl border border-[#edf2f7] flex items-center justify-between cursor-pointer hover:bg-slate-50 active:scale-[0.99] transition-all shadow-xs">
+                        <div>
+                            <h3 class="font-black text-slate-900 text-sm">Export Backup</h3>
+                            <p class="text-[11px] text-slate-400 font-semibold mt-0.5">Download Local JSON File</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-[#2c58ee] flex items-center justify-center text-sm border border-blue-100">
+                            <i class="fa-solid fa-download"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Import Data Card -->
+                    <label class="bg-white p-4 rounded-3xl border border-[#edf2f7] flex items-center justify-between cursor-pointer hover:bg-slate-50 active:scale-[0.99] transition-all shadow-xs">
+                        <div>
+                            <h3 class="font-black text-slate-900 text-sm">Import Data</h3>
+                            <p class="text-[11px] text-slate-400 font-semibold mt-0.5">Restore from Backup File</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-[#4f46e5] flex items-center justify-center text-sm border border-indigo-100">
+                            <i class="fa-solid fa-upload"></i>
+                        </div>
+                        <input type="file" class="hidden" onchange="importJSON(event)">
+                    </label>
+                </div>`;
+        }
+
+        // Report View with Running Balance Details
+        function renderReport(container, labor) {
+            const summary = getSummary(labor.id, state.currentMonth);
+            const att = state.attendance[labor.id] || {};
+            const adv = state.advances[labor.id] || {};
+            const advDet = state.advanceDetails[labor.id] || {};
+            const rate = parseFloat(labor.salaryAmount) || 0;
+
+            const daysInMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0).getDate();
+            const logs = [];
+            for(let i = 1; i <= daysInMonth; i++) {
+                const d = getLocalISO(new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), i));
+                const s = att[d]; const a = adv[d] || 0;
+                const rmk = (advDet[d] && advDet[d].remark) ? advDet[d].remark : '';
+                const rBal = getRunningBalanceUpToDate(labor.id, d);
+
+                if(s || a > 0) {
+                    if(state.reportFilter === 'present' && !['present','onehalf','double'].includes(s)) continue;
+                    if(state.reportFilter === 'half' && s !== 'half') continue;
+                    if(state.reportFilter === 'absent' && s !== 'absent') continue;
+                    if(state.reportFilter === 'advance' && a === 0) continue;
+                    logs.push({ d, s, a, rmk, rBal });
+                }
+            }
+
+            container.innerHTML = `
+                <div class="p-4 flex flex-col gap-3.5">
+                    <div class="bg-gradient-to-br from-[#0c1230] to-[#172154] text-white p-5 rounded-3xl shadow-md flex justify-between items-center relative">
+                        <div class="z-10">
+                            <p class="text-[10px] font-black uppercase text-blue-200 tracking-wider mb-1">Net Balance Due</p>
+                            <h2 class="text-3xl font-black tracking-tight num-tabular ${summary.balance >= 0 ? 'text-white' : 'text-rose-400'}">₹${summary.balance}</h2>
+                            <p class="text-[11px] text-slate-300 mt-1 font-semibold">Working Days: ${summary.present} Days</p>
+                        </div>
+                        <div class="text-right z-10 space-y-1.5">
+                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                                <span class="text-[8px] font-bold uppercase text-slate-300 block">Prev Rollover</span>
+                                <span class="text-xs font-black num-tabular ${summary.previousBalance >= 0 ? 'text-emerald-400' : 'text-rose-300'}">
+                                    ${summary.previousBalance >= 0 ? '+' : ''}₹${summary.previousBalance}
+                                </span>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                                <span class="text-[8px] font-bold uppercase text-slate-300 block">Earned</span>
+                                <span class="text-xs font-black text-emerald-400 num-tabular">+₹${summary.totalEarnings}</span>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                                <span class="text-[8px] font-bold uppercase text-slate-300 block">Paid</span>
+                                <span class="text-xs font-black text-rose-300 num-tabular">-₹${summary.totalAdvance}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2.5">
+                        <div class="bg-white p-3 rounded-2xl border border-slate-200 flex items-center justify-between shadow-xs">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Filter:</span>
+                            <select onchange="state.reportFilter=this.value; updateUI();" class="bg-slate-50 text-slate-800 font-extrabold px-3 py-1.5 rounded-xl text-xs border border-slate-200 outline-none">
+                                <option value="all" ${state.reportFilter === 'all' ? 'selected' : ''}>All Records</option>
+                                <option value="present" ${state.reportFilter === 'present' ? 'selected' : ''}>Present</option>
+                                <option value="half" ${state.reportFilter === 'half' ? 'selected' : ''}>Half Day (½)</option>
+                                <option value="absent" ${state.reportFilter === 'absent' ? 'selected' : ''}>Absent</option>
+                                <option value="advance" ${state.reportFilter === 'advance' ? 'selected' : ''}>Payment Only</option>
+                            </select>
+                        </div>
+                        <button onclick="generatePDF()" class="bg-[#0ea573] text-white py-3.5 rounded-2xl font-black uppercase text-xs tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-transform">
+                            <i class="fa-solid fa-file-pdf text-sm"></i> Download PDF Statement
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                        <table class="w-full text-left">
+                            <thead class="text-[9.5px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50">
+                                <tr>
+                                    <th class="p-3 text-left">Date</th>
+                                    <th class="p-3 text-center">Type</th>
+                                    <th class="p-3 text-right">Details & Running</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${logs.length === 0 ? `<tr><td colspan="3" class="p-8 text-center text-slate-400 font-black text-xs">No records found</td></tr>` : logs.map(log => {
+                                    let earn = 0;
+                                    if(log.s==='present') earn = rate; 
+                                    else if(log.s==='half') earn = rate*0.5;
+                                    else if(log.s==='onehalf') earn = rate*1.5; 
+                                    else if(log.s==='double') earn = rate*2;
+                                    
+                                    let typeDisplay = log.s ? (log.s === 'half' ? '½' : (log.s === 'onehalf' ? 'P+½' : (log.s === 'double' ? 'P+P' : log.s.toUpperCase()))) : 'PAID';
+                                    
+                                    return `
+                                        <tr class="fade-in hover:bg-slate-50/50 transition-colors">
+                                            <td class="p-3 font-bold text-slate-800 text-xs num-tabular">${new Date(log.d).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})}</td>
+                                            <td class="p-3 text-center"><span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase ${getStatusClass(log.s)}">${typeDisplay}</span></td>
+                                            <td class="p-3 text-right num-tabular">
+                                                <div class="flex items-center justify-end gap-1.5">
+                                                    ${earn > 0 ? `<span class="text-xs font-black text-[#0ea573]">+₹${earn}</span>` : ''}
+                                                    ${log.a > 0 ? `<span class="text-xs font-black text-[#ea2e49]">-₹${log.a}</span>` : ''}
+                                                    <span class="text-[10px] font-black px-1.5 py-0.5 rounded ${log.rBal >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">BAL: ₹${log.rBal}</span>
+                                                </div>
+                                                ${log.rmk ? `<div class="text-[8px] font-bold text-slate-400 mt-0.5">${log.rmk}</div>` : ''}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+        }
+
+        function getStatusClass(s) {
+            if(['present','onehalf','double'].includes(s)) return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+            if(s === 'absent') return 'bg-rose-50 text-rose-700 border border-rose-200';
+            if(s === 'half') return 'bg-amber-50 text-amber-700 border border-amber-200';
+            return 'bg-blue-50 text-blue-700 border border-blue-200';
+        }
+
+        function renderLaborForm(container, l) {
+            container.innerHTML = `
+                <form onsubmit="handleLaborSubmit(event)" class="p-4 flex flex-col gap-4 bg-white min-h-[80vh]">
+                    <div class="space-y-3">
+                        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
+                            <i class="fa-solid fa-user text-blue-500 text-sm w-4"></i>
+                            <input name="name" required value="${l ? l.name : ''}" class="bg-transparent w-full outline-none font-black text-sm uppercase text-slate-800 placeholder:text-slate-400" placeholder="Labor Name">
+                        </div>
+                        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
+                            <i class="fa-solid fa-phone text-blue-500 text-sm w-4"></i>
+                            <input name="phone" required value="${l ? l.phone : ''}" class="bg-transparent w-full outline-none font-bold text-sm text-slate-800 placeholder:text-slate-400 num-tabular" placeholder="Mobile Number">
+                        </div>
+                        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
+                            <i class="fa-solid fa-indian-rupee-sign text-blue-500 text-sm w-4"></i>
+                            <div class="flex flex-col w-full">
+                                <span class="text-[9.5px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Daily Rate</span>
+                                <input name="salaryAmount" type="number" required value="${l ? l.salaryAmount : '600'}" class="bg-transparent w-full outline-none font-black text-lg text-slate-800 num-tabular" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 space-y-2">
+                        <button type="submit" class="w-full bg-[#2c58ee] text-white py-3.5 rounded-2xl font-black uppercase text-xs tracking-wider shadow-md shadow-blue-500/25 active:scale-[0.98] transition-all">
+                            Save Profile
+                        </button>
+                        ${l ? `<button type="button" onclick="askDelete('${l.id}')" class="text-rose-600 font-black text-xs text-center w-full py-2.5 bg-rose-50 rounded-xl active:bg-rose-100 transition-colors">Delete Profile</button>` : ''}
+                    </div>
+                </form>`;
+        }
+
+        function handleLaborSubmit(e) {
+            e.preventDefault();
+            const f = new FormData(e.target);
+            const name = f.get('name').trim().toUpperCase();
+            const phone = f.get('phone').trim();
+            const salaryAmount = f.get('salaryAmount').trim();
+
+            if (!name) { notify("Please enter a name"); return; }
+
+            const l = { 
+                id: state.selectedLaborId || Date.now().toString(), 
+                name: name, 
+                phone: phone, 
+                salaryAmount: salaryAmount || '600'
+            };
+
+            if(state.selectedLaborId) { 
+                state.labors = state.labors.map(lb => lb.id === state.selectedLaborId ? l : lb); 
+                state.currentView = 'detail'; 
+            } else { 
+                state.labors.push(l); 
+                state.selectedLaborId = l.id;
+                state.currentView = 'detail'; 
+            }
+            sync(); 
+            updateUI(); 
+            notify("Profile Saved");
+        }
+
+        function askDelete(id) { 
+            customConfirm("Delete this labor profile permanently?", () => {
+                state.labors = state.labors.filter(l => l.id !== id); 
+                if (state.attendance[id]) delete state.attendance[id];
+                if (state.advances[id]) delete state.advances[id];
+                if (state.advanceDetails[id]) delete state.advanceDetails[id];
+                state.selectedLaborId = null;
+                state.currentView = 'list'; 
+                sync(); 
+                updateUI(); 
+                notify("Deleted");
+            }); 
+        }
+
+        function exportJSON() { 
+            const d = { l: state.labors, a: state.attendance, ad: state.advances, add: state.advanceDetails, cb: state.cashbook }; 
+            const b = new Blob([JSON.stringify(d)], { type: 'application/json' }); 
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(b); 
+            a.download = "labor_manager_backup_" + getLocalISO(new Date()) + ".json"; 
+            a.click(); 
+        }
+        
+        function importJSON(e) { 
+            const f = e.target.files[0]; 
+            if(!f) return; 
+            const r = new FileReader(); 
+            r.onload = (ev) => { 
+                try {
+                    const d = JSON.parse(ev.target.result); 
+                    state.labors = d.l || []; 
+                    state.attendance = d.a || {}; 
+                    state.advances = d.ad || {}; 
+                    state.advanceDetails = d.add || {}; 
+                    state.cashbook = d.cb || []; 
+                    cleanOldSyncedAdvances(); 
+                    sync(); 
+                    updateUI(); 
+                    notify("Backup Restored"); 
+                } catch(err) { 
+                    notify("Invalid file format!"); 
+                }
+            }; 
+            r.readAsText(f); 
+        }
+
+        // Safe launch on DOM Ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateUI);
+        } else {
+            updateUI();
+        }
+    </script>
+</body>
+</html>
+```
